@@ -22,7 +22,8 @@ fetch(API_URL)
     dados = json;
     carregarFiltros();
     renderizar();
-  });
+  })
+  .catch(err => console.error("Erro ao carregar dados:", err));
 
 document.getElementById("motoristaFiltro").addEventListener("change", renderizar);
 document.getElementById("statusFiltro").addEventListener("change", renderizar);
@@ -69,9 +70,12 @@ function renderizar() {
     }
   });
 
-  document.getElementById("kmTotal").innerText = `${kmTotal.toLocaleString("pt-BR")} KM`;
+  document.getElementById("kmTotal").innerText =
+    `${kmTotal.toLocaleString("pt-BR")} KM`;
+
   document.getElementById("rotasAbertas").innerText = abertas;
   document.getElementById("rotasFinalizadas").innerText = finalizadas;
+
   document.getElementById("motoristasAtivos").innerText =
     `${motoristasAtivos.size} / ${TODOS_MOTORISTAS.length}`;
 
@@ -105,11 +109,23 @@ function renderizarTabela(registros) {
 }
 
 /* =========================
-   DATA
+   DATA (CORREÇÃO DEFINITIVA)
 ========================= */
 function formatarData(data) {
   if (!data) return "-";
-  return new Date(data).toLocaleString("pt-BR");
+
+  const d = new Date(data);
+
+  if (isNaN(d.getTime())) return "-";
+
+  return (
+    d.toLocaleDateString("pt-BR") +
+    " " +
+    d.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit"
+    })
+  );
 }
 
 /* =========================
