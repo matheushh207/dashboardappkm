@@ -1,6 +1,6 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbwtYMoYHzn5fspPBsRezrUrRqsnl9b-Fq8E5-BvCWpxlnShBzIYXo6W6o5cyoCAg9sEtw/exec";
 
-/* LISTA FIXA DE MOTORISTAS (ABA MOTORISTAS) */
+/* LISTA FIXA DE MOTORISTAS */
 const TODOS_MOTORISTAS = [
   "MARIO",
   "JOEL",
@@ -47,34 +47,41 @@ function renderizar() {
   const motoristaSel = document.getElementById("motoristaFiltro").value;
   const statusSel = document.getElementById("statusFiltro").value;
 
+  /* DADOS FILTRADOS */
   const filtrado = dados.filter(d =>
     (motoristaSel === "TODOS" || d.motorista === motoristaSel) &&
     (statusSel === "TODOS" || d.status === statusSel)
   );
 
   let kmTotal = 0;
-  let abertas = 0;
-  let finalizadas = 0;
+  let rotasAbertas = 0;
+  let rotasFinalizadas = 0;
   const motoristasAtivos = new Set();
 
-  dados.forEach(r => {
+  /* CÁLCULOS BASEADOS NO FILTRO */
+  filtrado.forEach(r => {
+    motoristasAtivos.add(r.motorista);
+
     if (r.status === "EM ANDAMENTO") {
-      abertas++;
-      motoristasAtivos.add(r.motorista);
+      rotasAbertas++;
     }
 
     if (r.status === "FINALIZADO") {
-      finalizadas++;
+      rotasFinalizadas++;
+
       const kmRodado = Number(r.km_final) - Number(r.km_inicial);
-      if (!isNaN(kmRodado)) kmTotal += kmRodado;
+      if (!isNaN(kmRodado)) {
+        kmTotal += kmRodado;
+      }
     }
   });
 
+  /* ATUALIZA CARDS */
   document.getElementById("kmTotal").innerText =
     `${kmTotal.toLocaleString("pt-BR")} KM`;
 
-  document.getElementById("rotasAbertas").innerText = abertas;
-  document.getElementById("rotasFinalizadas").innerText = finalizadas;
+  document.getElementById("rotasAbertas").innerText = rotasAbertas;
+  document.getElementById("rotasFinalizadas").innerText = rotasFinalizadas;
 
   document.getElementById("motoristasAtivos").innerText =
     `${motoristasAtivos.size} / ${TODOS_MOTORISTAS.length}`;
@@ -109,13 +116,12 @@ function renderizarTabela(registros) {
 }
 
 /* =========================
-   DATA (CORREÇÃO DEFINITIVA)
+   DATA
 ========================= */
 function formatarData(data) {
   if (!data) return "-";
 
   const d = new Date(data);
-
   if (isNaN(d.getTime())) return "-";
 
   return (
