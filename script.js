@@ -13,6 +13,9 @@ const TODOS_MOTORISTAS = [
 
 let dados = [];
 
+/* =========================
+   CARREGA DADOS DA API
+========================= */
 fetch(API_URL)
   .then(res => res.json())
   .then(json => {
@@ -24,20 +27,26 @@ fetch(API_URL)
 document.getElementById("motoristaFiltro").addEventListener("change", renderizar);
 document.getElementById("statusFiltro").addEventListener("change", renderizar);
 
+/* =========================
+   FILTROS
+========================= */
 function carregarFiltros() {
   const select = document.getElementById("motoristaFiltro");
-  select.innerHTML = `<option value="TODOS">Todos</option>`;
+  select.innerHTML = `<option value="TODOS">Todos os motoristas</option>`;
 
   TODOS_MOTORISTAS.forEach(m => {
     select.innerHTML += `<option value="${m}">${m}</option>`;
   });
 }
 
+/* =========================
+   RENDERIZA DASHBOARD
+========================= */
 function renderizar() {
   const motoristaSel = document.getElementById("motoristaFiltro").value;
   const statusSel = document.getElementById("statusFiltro").value;
 
-  let filtrado = dados.filter(d =>
+  const filtrado = dados.filter(d =>
     (motoristaSel === "TODOS" || d.motorista === motoristaSel) &&
     (statusSel === "TODOS" || d.status === statusSel)
   );
@@ -52,25 +61,35 @@ function renderizar() {
       abertas++;
       motoristasAtivos.add(r.motorista);
     }
+
     if (r.status === "FINALIZADO") {
       finalizadas++;
-      kmTotal += (Number(r.km_final) - Number(r.km_inicial));
+      const kmRodado = Number(r.km_final) - Number(r.km_inicial);
+      if (!isNaN(kmRodado)) kmTotal += kmRodado;
     }
   });
 
-  document.getElementById("kmTotal").innerText = `${kmTotal} KM`;
+  document.getElementById("kmTotal").innerText = `${kmTotal.toLocaleString("pt-BR")} KM`;
   document.getElementById("rotasAbertas").innerText = abertas;
   document.getElementById("rotasFinalizadas").innerText = finalizadas;
   document.getElementById("motoristasAtivos").innerText =
     `${motoristasAtivos.size} / ${TODOS_MOTORISTAS.length}`;
 
+  renderizarTabela(filtrado);
+}
+
+/* =========================
+   TABELA
+========================= */
+function renderizarTabela(registros) {
   const tbody = document.getElementById("tabela");
   tbody.innerHTML = "";
 
-  filtrado.forEach(r => {
+  registros.forEach(r => {
     tbody.innerHTML += `
       <tr>
         <td>${formatarData(r.data_inicio)}</td>
+        <td>${formatarData(r.data_fim)}</td>
         <td>${r.motorista}</td>
         <td>${r.placa}</td>
         <td>${r.km_inicial}</td>
@@ -85,33 +104,54 @@ function renderizar() {
   });
 }
 
+/* =========================
+   DATA
+========================= */
 function formatarData(data) {
+  if (!data) return "-";
   return new Date(data).toLocaleString("pt-BR");
 }
 
-/* EXPORTAÇÕES */
+/* =========================
+   EXPORTAR PDF
+========================= */
 function exportarPDF() {
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
+  const doc = new jsPDF("l");
 
-  doc.setFontSize(14);
+  doc.setFontSize(16);
   doc.text("Controle de KM | Frota", 14, 15);
+
   doc.setFontSize(10);
   doc.text(`Exportado em ${new Date().toLocaleString("pt-BR")}`, 14, 22);
 
   doc.autoTable({
     startY: 30,
-    head: [["Data Início", "Motorista", "Placa", "KM Inicial", "KM Final", "Status"]],
+    head: [[
+      "Data Início",
+      "Data Final",
+      "Motorista",
+      "Placa",
+      "KM Inicial",
+      "KM Final",
+      "Status"
+    ]],
     body: [...document.querySelectorAll("#tabela tr")].map(tr =>
       [...tr.children].map(td => td.innerText)
-    )
+    ),
+    styles: { fontSize: 9 },
+    headStyles: { fillColor: [44, 62, 80] }
   });
 
   doc.save("controle_km_frota.pdf");
 }
 
+/* =========================
+   EXPORTAR CSV
+========================= */
 function exportarCSV() {
-  let csv = "Data Início,Motorista,Placa,KM Inicial,KM Final,Status\n";
+  let csv = "Data Início,Data Final,Motorista,Placa,KM Inicial,KM Final,Status\n";
+
   document.querySelectorAll("#tabela tr").forEach(tr => {
     csv += [...tr.children].map(td => `"${td.innerText}"`).join(",") + "\n";
   });
