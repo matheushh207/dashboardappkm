@@ -1,186 +1,135 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbwtYMoYHzn5fspPBsRezrUrRqsnl9b-Fq8E5-BvCWpxlnShBzIYXo6W6o5cyoCAg9sEtw/exec";
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Controle de KM | Frota</title>
 
-/* LISTA FIXA DE MOTORISTAS */
-const TODOS_MOTORISTAS = [
-  "MARIO",
-  "JOEL",
-  "VILSON",
-  "CLAUDIOMAR",
-  "BLADEMIR",
-  "ALESSANDRO",
-  "CARLOS"
-];
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
-let dados = [];
+<style>
+/* MESMO CSS DO SEU DASHBOARD + ABAÇÃO */
+body {margin:0; font-family:"Segoe UI",Arial,sans-serif; background:#f4f6f8; padding:24px;}
+.header {background:linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),url("header-frota.jpg") center/cover no-repeat; color:#fff; padding:28px; border-radius:16px; margin-bottom:24px;}
+.header h1{margin:0;font-size:26px;}
+.header p{margin-top:6px;opacity:.85;}
+.tabs{display:flex;gap:8px;margin-bottom:16px;}
+.tabs button{padding:10px 14px;border:none;border-radius:8px;cursor:pointer;background:#2c3e50;color:#fff;}
+.tabs button.active{background:#34495e;}
+.controls{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px;}
+select, button{padding:10px 14px;border-radius:8px;border:none;font-size:14px;}
+select{background:#fff;}
+button{background:#2c3e50;color:#fff;cursor:pointer;}
+button i{margin-right:6px;}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px;}
+.card{background:#fff;padding:18px;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,.08);}
+.card span{display:block;color:#777;font-size:13px;}
+.card strong{font-size:22px;margin-top:6px;display:block;}
+.table-box{background:#fff;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,.08);padding:16px;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+th{background:#2c3e50;color:#fff;padding:12px;font-size:13px;white-space:nowrap;}
+td{padding:12px;text-align:center;border-bottom:1px solid #eee;font-size:13px;white-space:nowrap;}
+.badge{padding:6px 12px;border-radius:12px;font-size:12px;font-weight:600;color:#fff;display:inline-block;}
+.andamento{background:#f39c12;}
+.finalizado{background:#27ae60;}
+</style>
+</head>
+<body>
 
-/* =========================
-   CARREGA DADOS DA API
-========================= */
-fetch(API_URL)
-  .then(res => res.json())
-  .then(json => {
-    dados = json;
-    carregarFiltros();
-    renderizar();
-  })
-  .catch(err => console.error("Erro ao carregar dados:", err));
+<div class="header">
+<h1><i class="fa-solid fa-truck"></i> Controle de KM | Frota</h1>
+<p>Gestão de frota e controle de rotas e coletas</p>
+</div>
 
-document.getElementById("motoristaFiltro").addEventListener("change", renderizar);
-document.getElementById("statusFiltro").addEventListener("change", renderizar);
+<!-- ABAS -->
+<div class="tabs">
+<button class="active" onclick="mostrarAba('rotas')">Rotas</button>
+<button onclick="mostrarAba('coletas')">Coletas</button>
+</div>
 
-/* =========================
-   FILTROS
-========================= */
-function carregarFiltros() {
-  const select = document.getElementById("motoristaFiltro");
-  select.innerHTML = `<option value="TODOS">Todos os motoristas</option>`;
+<!-- CONTEÚDO ROTAS -->
+<div id="rotas" class="aba">
+  <div class="controls">
+    <select id="motoristaFiltro">
+      <option value="TODOS">Todos os motoristas</option>
+    </select>
+    <select id="statusFiltro">
+      <option value="TODOS">Todos os status</option>
+      <option value="EM ANDAMENTO">Em andamento</option>
+      <option value="FINALIZADO">Finalizado</option>
+    </select>
+    <button onclick="exportarPDF('rotas')"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</button>
+    <button onclick="exportarCSV('rotas')"><i class="fa-solid fa-file-csv"></i> Exportar CSV</button>
+  </div>
 
-  TODOS_MOTORISTAS.forEach(m => {
-    select.innerHTML += `<option value="${m}">${m}</option>`;
-  });
-}
+  <div class="cards">
+    <div class="card"><span>KM Total Rodado</span><strong id="kmTotal">0 KM</strong></div>
+    <div class="card"><span>Rotas Abertas</span><strong id="rotasAbertas">0</strong></div>
+    <div class="card"><span>Rotas Finalizadas</span><strong id="rotasFinalizadas">0</strong></div>
+    <div class="card"><span>Motoristas em Operação</span><strong id="motoristasAtivos">0 / 0</strong></div>
+  </div>
 
-/* =========================
-   RENDERIZA DASHBOARD
-========================= */
-function renderizar() {
-  const motoristaSel = document.getElementById("motoristaFiltro").value;
-  const statusSel = document.getElementById("statusFiltro").value;
+  <div class="table-box">
+    <table>
+      <thead>
+        <tr>
+          <th>Data Início</th>
+          <th>Data Finalização</th>
+          <th>Motorista</th>
+          <th>Placa</th>
+          <th>KM Inicial</th>
+          <th>KM Final</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaRotas"></tbody>
+    </table>
+  </div>
+</div>
 
-  /* DADOS FILTRADOS */
-  const filtrado = dados.filter(d =>
-    (motoristaSel === "TODOS" || d.motorista === motoristaSel) &&
-    (statusSel === "TODOS" || d.status === statusSel)
-  );
+<!-- CONTEÚDO COLETAS -->
+<div id="coletas" class="aba" style="display:none;">
+  <div class="controls">
+    <select id="motoristaFiltroColetas">
+      <option value="TODOS">Todos os motoristas</option>
+    </select>
+    <select id="statusFiltroColetas">
+      <option value="TODOS">Todos os status</option>
+      <option value="ATIVO">Ativo</option>
+      <option value="AGRUPADO">Agrupado</option>
+    </select>
+    <button onclick="exportarPDF('coletas')"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</button>
+    <button onclick="exportarCSV('coletas')"><i class="fa-solid fa-file-csv"></i> Exportar CSV</button>
+  </div>
 
-  let kmTotal = 0;
-  let rotasAbertas = 0;
-  let rotasFinalizadas = 0;
-  const motoristasAtivos = new Set();
+  <div class="cards">
+    <div class="card"><span>Total Coletas</span><strong id="totalColetas">0</strong></div>
+    <div class="card"><span>Volumes Totais</span><strong id="volumesTotais">0</strong></div>
+    <div class="card"><span>Motoristas Ativos</span><strong id="motoristasColetas">0 / 0</strong></div>
+  </div>
 
-  /* CÁLCULOS BASEADOS NO FILTRO */
-  filtrado.forEach(r => {
-    motoristasAtivos.add(r.motorista);
+  <div class="table-box">
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Motorista</th>
+          <th>NF</th>
+          <th>CNPJ Remetente</th>
+          <th>CNPJ Destinatário</th>
+          <th>Cidade</th>
+          <th>Volumes</th>
+          <th>Tomador</th>
+          <th>Somar</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaColetas"></tbody>
+    </table>
+  </div>
+</div>
 
-    if (r.status === "EM ANDAMENTO") {
-      rotasAbertas++;
-    }
-
-    if (r.status === "FINALIZADO") {
-      rotasFinalizadas++;
-
-      const kmRodado = Number(r.km_final) - Number(r.km_inicial);
-      if (!isNaN(kmRodado)) {
-        kmTotal += kmRodado;
-      }
-    }
-  });
-
-  /* ATUALIZA CARDS */
-  document.getElementById("kmTotal").innerText =
-    `${kmTotal.toLocaleString("pt-BR")} KM`;
-
-  document.getElementById("rotasAbertas").innerText = rotasAbertas;
-  document.getElementById("rotasFinalizadas").innerText = rotasFinalizadas;
-
-  document.getElementById("motoristasAtivos").innerText =
-    `${motoristasAtivos.size} / ${TODOS_MOTORISTAS.length}`;
-
-  renderizarTabela(filtrado);
-}
-
-/* =========================
-   TABELA
-========================= */
-function renderizarTabela(registros) {
-  const tbody = document.getElementById("tabela");
-  tbody.innerHTML = "";
-
-  registros.forEach(r => {
-    tbody.innerHTML += `
-      <tr>
-        <td>${formatarData(r.data_inicio)}</td>
-        <td>${formatarData(r.data_fim)}</td>
-        <td>${r.motorista}</td>
-        <td>${r.placa}</td>
-        <td>${r.km_inicial}</td>
-        <td>${r.km_final || "-"}</td>
-        <td>
-          <span class="badge ${r.status === "EM ANDAMENTO" ? "andamento" : "finalizado"}">
-            ${r.status}
-          </span>
-        </td>
-      </tr>
-    `;
-  });
-}
-
-/* =========================
-   DATA
-========================= */
-function formatarData(data) {
-  if (!data) return "-";
-
-  const d = new Date(data);
-  if (isNaN(d.getTime())) return "-";
-
-  return (
-    d.toLocaleDateString("pt-BR") +
-    " " +
-    d.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit"
-    })
-  );
-}
-
-/* =========================
-   EXPORTAR PDF
-========================= */
-function exportarPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF("l");
-
-  doc.setFontSize(16);
-  doc.text("Controle de KM | Frota", 14, 15);
-
-  doc.setFontSize(10);
-  doc.text(`Exportado em ${new Date().toLocaleString("pt-BR")}`, 14, 22);
-
-  doc.autoTable({
-    startY: 30,
-    head: [[
-      "Data Início",
-      "Data Final",
-      "Motorista",
-      "Placa",
-      "KM Inicial",
-      "KM Final",
-      "Status"
-    ]],
-    body: [...document.querySelectorAll("#tabela tr")].map(tr =>
-      [...tr.children].map(td => td.innerText)
-    ),
-    styles: { fontSize: 9 },
-    headStyles: { fillColor: [44, 62, 80] }
-  });
-
-  doc.save("controle_km_frota.pdf");
-}
-
-/* =========================
-   EXPORTAR CSV
-========================= */
-function exportarCSV() {
-  let csv = "Data Início,Data Final,Motorista,Placa,KM Inicial,KM Final,Status\n";
-
-  document.querySelectorAll("#tabela tr").forEach(tr => {
-    csv += [...tr.children].map(td => `"${td.innerText}"`).join(",") + "\n";
-  });
-
-  const blob = new Blob([csv], { type: "text/csv" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "controle_km_frota.csv";
-  link.click();
-}
+<script src="dashboard.js"></script>
+</body>
+</html>
