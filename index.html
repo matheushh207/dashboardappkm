@@ -1,292 +1,217 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Controle de KM | Frota</title>
+<meta charset="UTF-8">
+<title>Controle de KM | Frota</title>
 
-  <!-- Ícones -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<!-- Ícones -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <!-- PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+<!-- PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: "Segoe UI", Arial, sans-serif;
-      background: #f4f6f8;
-      padding: 24px;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #e1e8f0; /* fundo claro */
+  padding: 24px;
+}
 
-    /* HEADER */
-    .header {
-      background:
-        linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
-        url("header-frota.jpg") center/cover no-repeat;
-      color: #fff;
-      padding: 28px;
-      border-radius: 16px;
-      margin-bottom: 24px;
-    }
+/* HEADER */
+.header {
+  background: linear-gradient(
+      rgba(0,0,0,0.5),
+      rgba(0,0,0,0.5)
+    ),
+    url("header-frota.jpg") center/cover no-repeat;
+  color: #fff;
+  padding: 28px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+.header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+.header p {
+  margin-top: 6px;
+  opacity: 0.85;
+  font-weight: 400;
+}
 
-    .header h1 {
-      margin: 0;
-      font-size: 26px;
-    }
+/* CONTROLS */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+select, button {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+select {
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+button {
+  background: #1b3a57; /* azul escuro */
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+button:hover {
+  background: #274f7c;
+}
+button i {
+  margin-right: 6px;
+}
 
-    .header p {
-      margin-top: 6px;
-      opacity: .85;
-    }
+/* CARDS */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+.card span {
+  display: block;
+  color: #555;
+  font-size: 13px;
+}
+.card strong {
+  font-size: 24px;
+  margin-top: 6px;
+  display: block;
+  color: #1b3a57; /* azul escuro nos números */
+}
 
-    /* NAV TABS */
-    .tabs {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
+/* TABLE */
+.table-box {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  padding: 16px;
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th {
+  background: #1b3a57; /* azul escuro */
+  color: #fff;
+  padding: 14px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+  white-space: nowrap;
+}
 
-    .tab {
-      padding: 10px 16px;
-      border-radius: 8px;
-      background: #2c3e50;
-      color: #fff;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .tab.active {
-      background: #f39c12;
-    }
-
-    /* CONTROLS */
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    select, button {
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: none;
-      font-size: 14px;
-    }
-
-    select {
-      background: #fff;
-    }
-
-    button {
-      background: #2c3e50;
-      color: #fff;
-      cursor: pointer;
-    }
-
-    button i {
-      margin-right: 6px;
-    }
-
-    /* CARDS */
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .card {
-      background: #fff;
-      padding: 18px;
-      border-radius: 14px;
-      box-shadow: 0 4px 12px rgba(0,0,0,.08);
-    }
-
-    .card span {
-      display: block;
-      color: #777;
-      font-size: 13px;
-    }
-
-    .card strong {
-      font-size: 22px;
-      margin-top: 6px;
-      display: block;
-    }
-
-    /* TABLE */
-    .table-box {
-      background: #fff;
-      border-radius: 14px;
-      box-shadow: 0 4px 12px rgba(0,0,0,.08);
-      padding: 16px;
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    th {
-      background: #2c3e50;
-      color: #fff;
-      padding: 12px;
-      font-size: 13px;
-      white-space: nowrap;
-    }
-
-    td {
-      padding: 12px;
-      text-align: center;
-      border-bottom: 1px solid #eee;
-      font-size: 13px;
-      white-space: nowrap;
-    }
-
-    /* STATUS */
-    .badge {
-      padding: 6px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #fff;
-      display: inline-block;
-    }
-
-    .andamento { background: #f39c12; }
-    .finalizado { background: #27ae60; }
-    .ativo { background: #3498db; }
-    .agrupado { background: #8e44ad; }
-
-    .hidden { display: none; }
-  </style>
+/* STATUS */
+.badge {
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  display: inline-block;
+}
+.andamento {
+  background: #f1c40f; /* amarelo */
+}
+.finalizado {
+  background: #27ae60; /* verde */
+}
+</style>
 </head>
 
 <body>
 
-  <!-- HEADER -->
-  <div class="header">
-    <h1><i class="fa-solid fa-truck"></i> Controle de KM | Frota</h1>
-    <p>Gestão de rotas e coletas</p>
+<!-- HEADER -->
+<div class="header">
+  <h1><i class="fa-solid fa-truck"></i> Controle de KM | Frota</h1>
+  <p>Gestão de frota e controle de rotas</p>
+</div>
+
+<!-- FILTROS -->
+<div class="controls">
+  <select id="motoristaFiltro">
+    <option value="TODOS">Todos os motoristas</option>
+  </select>
+  <select id="statusFiltro">
+    <option value="TODOS">Todos os status</option>
+    <option value="EM ANDAMENTO">Em andamento</option>
+    <option value="FINALIZADO">Finalizado</option>
+  </select>
+  <button onclick="exportarPDF()">
+    <i class="fa-solid fa-file-pdf"></i> Exportar PDF
+  </button>
+  <button onclick="exportarCSV()">
+    <i class="fa-solid fa-file-csv"></i> Exportar CSV
+  </button>
+</div>
+
+<!-- CARDS -->
+<div class="cards">
+  <div class="card">
+    <span>KM Total Rodado</span>
+    <strong id="kmTotal">0 KM</strong>
   </div>
-
-  <!-- TABS -->
-  <div class="tabs">
-    <div class="tab active" data-tab="rotas">Rotas</div>
-    <div class="tab" data-tab="coletas">Coletas</div>
+  <div class="card">
+    <span>Rotas Abertas</span>
+    <strong id="rotasAbertas">0</strong>
   </div>
-
-  <!-- CONTROLS -->
-  <div class="controls" id="filtrosRotas">
-    <select id="motoristaFiltro">
-      <option value="TODOS">Todos os motoristas</option>
-    </select>
-
-    <select id="statusFiltro">
-      <option value="TODOS">Todos os status</option>
-      <option value="EM ANDAMENTO">Em andamento</option>
-      <option value="FINALIZADO">Finalizado</option>
-    </select>
-
-    <button onclick="exportarPDF()">
-      <i class="fa-solid fa-file-pdf"></i> Exportar PDF
-    </button>
-
-    <button onclick="exportarCSV()">
-      <i class="fa-solid fa-file-csv"></i> Exportar CSV
-    </button>
+  <div class="card">
+    <span>Rotas Finalizadas</span>
+    <strong id="rotasFinalizadas">0</strong>
   </div>
-
-  <div class="controls hidden" id="filtrosColetas">
-    <select id="motoristaColetaFiltro">
-      <option value="TODOS">Todos os motoristas</option>
-    </select>
-
-    <select id="statusColetaFiltro">
-      <option value="TODOS">Todos os status</option>
-      <option value="ATIVO">Ativo</option>
-      <option value="AGRUPADO">Agrupado</option>
-    </select>
-
-    <button onclick="exportarPDF('coletas')">
-      <i class="fa-solid fa-file-pdf"></i> Exportar PDF
-    </button>
-
-    <button onclick="exportarCSV('coletas')">
-      <i class="fa-solid fa-file-csv"></i> Exportar CSV
-    </button>
+  <div class="card">
+    <span>Motoristas em Operação</span>
+    <strong id="motoristasAtivos">0 / 0</strong>
   </div>
+</div>
 
-  <!-- CARDS -->
-  <div class="cards" id="cardsRotas">
-    <div class="card">
-      <span>KM Total Rodado</span>
-      <strong id="kmTotal">0 KM</strong>
-    </div>
-    <div class="card">
-      <span>Rotas Abertas</span>
-      <strong id="rotasAbertas">0</strong>
-    </div>
-    <div class="card">
-      <span>Rotas Finalizadas</span>
-      <strong id="rotasFinalizadas">0</strong>
-    </div>
-    <div class="card">
-      <span>Motoristas em Operação</span>
-      <strong id="motoristasAtivos">0 / 0</strong>
-    </div>
-  </div>
+<!-- TABELA -->
+<div class="table-box">
+  <table>
+    <thead>
+      <tr>
+        <th>Data Início</th>
+        <th>Data Finalização</th>
+        <th>Motorista</th>
+        <th>Placa</th>
+        <th>KM Inicial</th>
+        <th>KM Final</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="tabela"></tbody>
+  </table>
+</div>
 
-  <div class="cards hidden" id="cardsColetas">
-    <div class="card">
-      <span>Total de Coletas</span>
-      <strong id="totalColetas">0</strong>
-    </div>
-    <div class="card">
-      <span>Total de Volumes</span>
-      <strong id="totalVolumes">0</strong>
-    </div>
-  </div>
-
-  <!-- TABELAS -->
-  <div class="table-box">
-    <table id="tabelaRotas">
-      <thead>
-        <tr>
-          <th>Data Início</th>
-          <th>Data Final</th>
-          <th>Motorista</th>
-          <th>Placa</th>
-          <th>KM Inicial</th>
-          <th>KM Final</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="tabela"></tbody>
-    </table>
-
-    <table id="tabelaColetas" class="hidden">
-      <thead>
-        <tr>
-          <th>Data</th>
-          <th>Motorista</th>
-          <th>NF</th>
-          <th>CNPJ Remetente</th>
-          <th>CNPJ Destinatário</th>
-          <th>Cidade Destino</th>
-          <th>Volumes</th>
-          <th>Tomador</th>
-          <th>Somar</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="tabelaColetasBody"></tbody>
-    </table>
-  </div>
-
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
