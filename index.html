@@ -15,7 +15,7 @@
 body {
   margin: 0;
   font-family: "Segoe UI", Arial, sans-serif;
-  background: #e1e8f0; /* fundo claro */
+  background: #e1e8f0;
   padding: 24px;
 }
 
@@ -39,7 +39,6 @@ body {
 .header p {
   margin-top: 6px;
   opacity: 0.85;
-  font-weight: 400;
 }
 
 /* CONTROLS */
@@ -61,7 +60,7 @@ select {
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 button {
-  background: #1b3a57; /* azul escuro */
+  background: #1b3a57;
   color: #fff;
   cursor: pointer;
   font-weight: 600;
@@ -100,7 +99,7 @@ button i {
   font-size: 24px;
   margin-top: 6px;
   display: block;
-  color: #1b3a57; /* azul escuro nos números */
+  color: #1b3a57;
 }
 
 /* TABLE */
@@ -116,7 +115,7 @@ table {
   border-collapse: collapse;
 }
 th {
-  background: #1b3a57; /* azul escuro */
+  background: #1b3a57;
   color: #fff;
   padding: 14px;
   font-size: 13px;
@@ -140,10 +139,10 @@ td {
   display: inline-block;
 }
 .andamento {
-  background: #f1c40f; /* amarelo */
+  background: #f1c40f;
 }
 .finalizado {
-  background: #27ae60; /* verde */
+  background: #27ae60;
 }
 </style>
 </head>
@@ -161,16 +160,24 @@ td {
   <select id="motoristaFiltro">
     <option value="TODOS">Todos os motoristas</option>
   </select>
+
   <select id="statusFiltro">
     <option value="TODOS">Todos os status</option>
     <option value="EM ANDAMENTO">Em andamento</option>
     <option value="FINALIZADO">Finalizado</option>
   </select>
+
   <button onclick="exportarPDF()">
     <i class="fa-solid fa-file-pdf"></i> Exportar PDF
   </button>
+
   <button onclick="exportarCSV()">
     <i class="fa-solid fa-file-csv"></i> Exportar CSV
+  </button>
+
+  <!-- BOTÃO DE RECARREGAR (F5) -->
+  <button onclick="location.reload()">
+    <i class="fa-solid fa-rotate-right"></i> Recarregar
   </button>
 </div>
 
