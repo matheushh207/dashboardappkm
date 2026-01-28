@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --- RESET E CONFIGURAÇÕES GLOBAIS --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    background-color: #0D1117;
+    color: #E6EDF3;
+    min-height: 100vh;
+    padding: 24px;
+    overflow-x: hidden;
+}
+
+/* --- FUNDO ANIMADO AURORA BOREAL --- */
+.aurora-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: radial-gradient(ellipse 80% 80% at 50% -20%, rgba(0, 120, 212, 0.15), #0D1117),
+                radial-gradient(ellipse 80% 80% at 50% -20%, rgba(3, 102, 214, 0.1), #0D1117);
+    background-size: cover;
+}
+
+/* --- HEADER COM IMAGEM RESTAURADA --- */
+.header {
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("header-frota.jpg") center/cover no-repeat;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 35px;
+    margin-bottom: 24px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+}
+
+.header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header h1 i { color: #0078d4; }
+.header p { color: rgba(255,255,255,0.8); margin-top: 8px; font-size: 1.1rem; }
+
+/* --- CONTROLS --- */
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+select, button {
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+select {
+    background: rgba(30, 36, 46, 0.7);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    min-width: 220px;
+}
+
+button {
+    background: #1b3a57;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+button:hover {
+    background: #0078d4;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 120, 212, 0.3);
+}
+
+/* --- CARDS --- */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.card {
+    background: rgba(30, 36, 46, 0.5);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    padding: 22px;
+    transition: all 0.4s ease;
+}
+
+.card span { color: #8B949E; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 5px; }
+.card strong { font-size: 24px; font-weight: 700; color: #fff; display: block; }
+
+/* --- TABLE BOX E ALINHAMENTO CORRIGIDO --- */
+.table-box {
+    background: rgba(30, 36, 46, 0.4);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 10px;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px; /* Garante que não esprema as colunas */
+}
+
+th {
+    background: rgba(0, 120, 212, 0.15);
+    color: #0078d4;
+    padding: 16px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+td {
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 13px;
+    color: #E6EDF3;
+}
+
+tr:hover { background: rgba(255, 255, 255, 0.03); }
+
+/* --- BADGES --- */
+.badge {
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.andamento { background: rgba(241, 196, 15, 0.2); color: #f1c40f; border: 1px solid rgba(241, 196, 15, 0.3); }
+.finalizado { background: rgba(39, 174, 96, 0.2); color: #27ae60; border: 1px solid rgba(39, 174, 96, 0.3); }
+
+/* RESPONSIVIDADE */
+@media (max-width: 768px) {
+    .header { padding: 25px; }
+    .header h1 { font-size: 1.6rem; }
+    .controls { flex-direction: column; }
+}
