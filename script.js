@@ -2,13 +2,19 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwtYMoYHzn5fspPBsRezrUr
 
 /* LISTA FIXA DE MOTORISTAS */
 const TODOS_MOTORISTAS = [
-  "MARIO", "JOEL", "VILSON", "CLAUDIOMAR", "BLADEMIR", "ALESSANDRO", "CARLOS"
+  "MARIO",
+  "JOEL",
+  "VILSON",
+  "CLAUDIOMAR",
+  "BLADEMIR",
+  "ALESSANDRO",
+  "CARLOS"
 ];
 
 let dados = [];
 
-/* ========================= CARREGA DADOS DA API ========================= */
-fetch(API_URL)
+// BUSCA DADOS DA API
+fetch(API_URL )
   .then(res => res.json())
   .then(json => {
     dados = json;
@@ -20,83 +26,83 @@ fetch(API_URL)
 document.getElementById("motoristaFiltro").addEventListener("change", renderizar);
 document.getElementById("statusFiltro").addEventListener("change", renderizar);
 
-/* ========================= FILTROS ========================= */
 function carregarFiltros() {
   const select = document.getElementById("motoristaFiltro");
   select.innerHTML = `<option value="TODOS">Todos os motoristas</option>`;
+
   TODOS_MOTORISTAS.forEach(m => {
     select.innerHTML += `<option value="${m}">${m}</option>`;
   });
 }
 
-/* ========================= RENDERIZA DASHBOARD ========================= */
 function renderizar() {
   const motoristaSel = document.getElementById("motoristaFiltro").value;
   const statusSel = document.getElementById("statusFiltro").value;
 
-  /* DADOS FILTRADOS */
-  const filtrado = dados.filter(d => 
+  let filtrado = dados.filter(d =>
     (motoristaSel === "TODOS" || d.motorista === motoristaSel) &&
     (statusSel === "TODOS" || d.status === statusSel)
   );
 
   let kmTotal = 0;
-  let rotasAbertas = 0;
-  let rotasFinalizadas = 0;
+  let abertas = 0;
+  let finalizadas = 0;
   const motoristasAtivos = new Set();
 
-  filtrado.forEach(r => {
-    motoristasAtivos.add(r.motorista);
-
-    if (r.status === "EM ANDAMENTO") rotasAbertas++;
+  dados.forEach(r => {
+    if (r.status === "EM ANDAMENTO") {
+      abertas++;
+      motoristasAtivos.add(r.motorista);
+    }
     if (r.status === "FINALIZADO") {
-      rotasFinalizadas++;
-      const kmRodado = Number(r.km_final) - Number(r.km_inicial);
-      if (!isNaN(kmRodado)) kmTotal += kmRodado;
+      finalizadas++;
+      kmTotal += (Number(r.km_final) - Number(r.km_inicial));
     }
   });
 
-  /* ATUALIZA CARDS */
-  document.getElementById("kmTotal").innerText = `${kmTotal.toLocaleString("pt-BR")} KM`;
-  document.getElementById("rotasAbertas").innerText = rotasAbertas;
-  document.getElementById("rotasFinalizadas").innerText = rotasFinalizadas;
-  document.getElementById("motoristasAtivos").innerText = `${motoristasAtivos.size} / ${TODOS_MOTORISTAS.length}`;
+  document.getElementById("kmTotal").innerText = `${kmTotal} KM`;
+  document.getElementById("rotasAbertas").innerText = abertas;
+  document.getElementById("rotasFinalizadas").innerText = finalizadas;
+  document.getElementById("motoristasAtivos").innerText =
+    `${motoristasAtivos.size} / ${TODOS_MOTORISTAS.length}`;
 
-  renderizarTabela(filtrado);
-}
-
-/* ========================= TABELA ========================= */
-function renderizarTabela(registros) {
   const tbody = document.getElementById("tabela");
-  tbody.innerHTML = registros.map(r => `
-    <tr>
-      <td>${formatarData(r.data_inicio)}</td>
-      <td>${formatarData(r.data_fim)}</td>
-      <td>${r.motorista}</td>
-      <td>${r.placa}</td>
-      <td>${r.km_inicial}</td>
-      <td>${r.km_final || "-"}</td>
-      <td>
-        <span class="badge ${r.status === "EM ANDAMENTO" ? "andamento" : "finalizado"}">
-          ${r.status}
-        </span>
-      </td>
-    </tr>
-  `).join("");
+  tbody.innerHTML = "";
+
+  filtrado.forEach(r => {
+    // CONSTRUÇÃO DAS 7 COLUNAS NA ORDEM EXATA DO APPS SCRIPT
+    tbody.innerHTML += `
+      <tr>
+        <td>${r.data_inicio ? formatarData(r.data_inicio) : "-"}</td>
+        <td>${r.data_fim ? formatarData(r.data_fim) : "-"}</td>
+        <td>${r.motorista}</td>
+        <td>${r.placa}</td>
+        <td>${r.km_inicial}</td>
+        <td>${r.km_final || "-"}</td>
+        <td>
+          <span class="badge ${r.status === "EM ANDAMENTO" ? "andamento" : "finalizado"}">
+            ${r.status}
+          </span>
+        </td>
+      </tr>
+    `;
+  });
 }
 
-/* ========================= DATA ========================= */
 function formatarData(data) {
   if (!data) return "-";
-  const d = new Date(data);
-  if (isNaN(d.getTime())) return "-";
-  return `${d.toLocaleDateString("pt-BR")} ${d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+  try {
+    return new Date(data).toLocaleString("pt-BR");
+  } catch (e) {
+    return data;
+  }
 }
 
-/* ========================= EXPORTAR PDF ========================= */
+/* EXPORTAÇÕES */
 function exportarPDF() {
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF("l");
+  const doc = new jsPDF('l', 'mm', 'a4'); // 'l' para horizontal, cabe melhor as 7 colunas
+
   doc.setFontSize(16);
   doc.text("Controle de KM | Frota", 14, 15);
   doc.setFontSize(10);
@@ -104,23 +110,24 @@ function exportarPDF() {
 
   doc.autoTable({
     startY: 30,
-    head: [[ "Data Início", "Data Final", "Motorista", "Placa", "KM Inicial", "KM Final", "Status" ]],
-    body: [...document.querySelectorAll("#tabela tr")].map(tr => [...tr.children].map(td => td.innerText)),
-    styles: { fontSize: 9 },
-    headStyles: { fillColor: [27, 58, 87] } // azul escuro
+    head: [["Início", "Finalização", "Motorista", "Placa", "KM Inicial", "KM Final", "Status"]],
+    body: [...document.querySelectorAll("#tabela tr")].map(tr =>
+      [...tr.children].map(td => td.innerText)
+    ),
+    theme: 'grid',
+    headStyles: { fillColor: [27, 58, 87] }
   });
 
   doc.save("controle_km_frota.pdf");
 }
 
-/* ========================= EXPORTAR CSV ========================= */
 function exportarCSV() {
-  let csv = "Data Início,Data Final,Motorista,Placa,KM Inicial,KM Final,Status\n";
+  let csv = "\uFEFFData Inicio,Data Finalizacao,Motorista,Placa,KM Inicial,KM Final,Status\n";
   document.querySelectorAll("#tabela tr").forEach(tr => {
-    csv += [...tr.children].map(td => `${td.innerText}`).join(",") + "\n";
+    csv += [...tr.children].map(td => `"${td.innerText}"`).join(",") + "\n";
   });
 
-  const blob = new Blob([csv], { type: "text/csv" });
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
   link.download = "controle_km_frota.csv";
