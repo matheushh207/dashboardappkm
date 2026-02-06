@@ -14,7 +14,7 @@ const TODOS_MOTORISTAS = [
 let dados = [];
 
 // BUSCA DADOS DA API
-fetch(API_URL )
+fetch(API_URL)
   .then(res => res.json())
   .then(json => {
     dados = json;
@@ -25,6 +25,9 @@ fetch(API_URL )
 
 document.getElementById("motoristaFiltro").addEventListener("change", renderizar);
 document.getElementById("statusFiltro").addEventListener("change", renderizar);
+
+/* 🔹 FILTRO DE DATA (ADICIONADO) */
+document.getElementById("dataFiltro").addEventListener("change", renderizar);
 
 function carregarFiltros() {
   const select = document.getElementById("motoristaFiltro");
@@ -38,11 +41,27 @@ function carregarFiltros() {
 function renderizar() {
   const motoristaSel = document.getElementById("motoristaFiltro").value;
   const statusSel = document.getElementById("statusFiltro").value;
+  const dataSel = document.getElementById("dataFiltro").value; // yyyy-mm-dd
 
-  let filtrado = dados.filter(d =>
-    (motoristaSel === "TODOS" || d.motorista === motoristaSel) &&
-    (statusSel === "TODOS" || d.status === statusSel)
-  );
+  let filtrado = dados.filter(d => {
+
+    const matchMotorista =
+      motoristaSel === "TODOS" || d.motorista === motoristaSel;
+
+    const matchStatus =
+      statusSel === "TODOS" || d.status === statusSel;
+
+    let matchData = true;
+    if (dataSel) {
+      const dataRegistro = d.data_inicio
+        ? new Date(d.data_inicio).toISOString().split("T")[0]
+        : null;
+
+      matchData = dataRegistro === dataSel;
+    }
+
+    return matchMotorista && matchStatus && matchData;
+  });
 
   let kmTotal = 0;
   let abertas = 0;
@@ -70,7 +89,6 @@ function renderizar() {
   tbody.innerHTML = "";
 
   filtrado.forEach(r => {
-    // CONSTRUÇÃO DAS 7 COLUNAS NA ORDEM EXATA DO APPS SCRIPT
     tbody.innerHTML += `
       <tr>
         <td>${r.data_inicio ? formatarData(r.data_inicio) : "-"}</td>
@@ -101,7 +119,7 @@ function formatarData(data) {
 /* EXPORTAÇÕES */
 function exportarPDF() {
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('l', 'mm', 'a4'); // 'l' para horizontal, cabe melhor as 7 colunas
+  const doc = new jsPDF('l', 'mm', 'a4');
 
   doc.setFontSize(16);
   doc.text("Controle de KM | Frota", 14, 15);
