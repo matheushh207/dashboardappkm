@@ -168,3 +168,45 @@ tr:hover { background: rgba(255, 255, 255, 0.03); }
     .header h1 { font-size: 1.6rem; }
     .controls { flex-direction: column; }
 }
+/* --- INPUT DATE (CORREÇÃO VISUAL COMPLETA) --- */
+input[type="date"] {
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(30, 36, 46, 0.7);
+    backdrop-filter: blur(10px);
+    color: #ffffff;
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    min-width: 180px;
+    height: 44px;
+    transition: all 0.3s ease;
+}
+
+/* Remove fundo branco interno (Chrome) */
+input[type="date"]::-webkit-datetime-edit {
+    color: #ffffff;
+}
+
+/* Ícone do calendário */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+input[type="date"]:hover {
+    border-color: rgba(0, 120, 212, 0.6);
+}
+
+input[type="date"]:focus {
+    outline: none;
+    border-color: #0078d4;
+    box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.3);
+}
+
+/* Placeholder (quando vazio) */
+input[type="date"]:not(:valid) {
+    color: rgba(230, 237, 243, 0.6);
+}
