@@ -4,34 +4,57 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Controle de KM | Frota</title>
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="style.css">
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 </head>
+
 <body>
+
 <div class="aurora-background"></div>
+
 <div class="header">
   <h1><i class="fa-solid fa-truck"></i> Controle de KM | Frota</h1>
   <p>Gestão de frota e controle de rotas</p>
 </div>
+
 <div class="controls">
-  <select id="motoristaFiltro"><option value="TODOS">Todos os motoristas</option></select>
+  <select id="motoristaFiltro">
+    <option value="TODOS">Todos os motoristas</option>
+  </select>
+
   <select id="statusFiltro">
     <option value="TODOS">Todos os status</option>
     <option value="EM ANDAMENTO">Em andamento</option>
     <option value="FINALIZADO">Finalizado</option>
   </select>
-  <button onclick="exportarPDF( )"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</button>
-  <button onclick="exportarCSV()"><i class="fa-solid fa-file-csv"></i> Exportar CSV</button>
-  <button onclick="location.reload()"><i class="fa-solid fa-rotate-right"></i> Recarregar</button>
+
+  <!-- 🔹 FILTRO DE DATA (ADICIONADO) -->
+  <input type="date" id="dataFiltro">
+
+  <button onclick="exportarPDF()">
+    <i class="fa-solid fa-file-pdf"></i> Exportar PDF
+  </button>
+
+  <button onclick="exportarCSV()">
+    <i class="fa-solid fa-file-csv"></i> Exportar CSV
+  </button>
+
+  <button onclick="location.reload()">
+    <i class="fa-solid fa-rotate-right"></i> Recarregar
+  </button>
 </div>
+
 <div class="cards">
   <div class="card"><span>KM Total Rodado</span><strong id="kmTotal">0 KM</strong></div>
   <div class="card"><span>Rotas Abertas</span><strong id="rotasAbertas">0</strong></div>
   <div class="card"><span>Rotas Finalizadas</span><strong id="rotasFinalizadas">0</strong></div>
   <div class="card"><span>Motoristas em Operação</span><strong id="motoristasAtivos">0 / 0</strong></div>
 </div>
+
 <div class="table-box">
   <table>
     <thead>
@@ -48,19 +71,24 @@
     <tbody id="tabela"></tbody>
   </table>
 </div>
+
 <script src="script.js"></script>
+
 <script>
-    document.querySelectorAll('.card').forEach(card => {
-        card.addEventListener('mousemove', (e) => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left - rect.width / 2;
-            const y = e.clientY - rect.top - rect.height / 2;
-            card.style.transform = `perspective(1000px) rotateX(${-y / 15}deg) rotateY(${x / 15}deg) scale3d(1.05, 1.05, 1.05)`;
-        });
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
-        });
-    });
+document.querySelectorAll('.card').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    card.style.transform =
+      `perspective(1000px) rotateX(${-y / 15}deg) rotateY(${x / 15}deg) scale3d(1.05, 1.05, 1.05)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform =
+      'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+  });
+});
 </script>
+
 </body>
 </html>
