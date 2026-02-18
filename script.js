@@ -8,7 +8,8 @@ const TODOS_MOTORISTAS = [
   "CLAUDIOMAR",
   "BLADEMIR",
   "ALESSANDRO",
-  "CARLOS"
+  "CARLOS",
+  "JONAS"
 ];
 
 let dados = [];
